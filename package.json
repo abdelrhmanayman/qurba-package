@@ -1,0 +1,18 @@
+{
+  "name": "qurba-package",
+  "version": "1.0.0",
+  "description": "commen code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@hapi/joi": "^16.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdelrhmanayman/qurba-package.git"
+  },
+  "author": "abdelrhmanayman",
+  "license": "ISC"
+}
