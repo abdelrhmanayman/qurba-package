@@ -1,4 +1,5 @@
 const Joi = require('@hapi/joi')
+const axios = require('axios')
 
 const mobilePattern = /^01[0-2]{1}[0-9]{8}/
 const mobile = Joi.string().regex(mobilePattern)
@@ -6,6 +7,8 @@ const password = Joi.string()
 const username = Joi.string()
 const email = Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
 const subject = Joi.string()
+
+const generalAPIS = ['getAllStudents', 'getStudentDetails']
 
 let CreateUser = Joi.object({
     username: username.required(),
@@ -65,3 +68,22 @@ exports.find = ({ model, one = false, aggregation = null, finder = {}, selection
             !skip && !limit ?
                 model.find(finder).select(selection).sort(sort) :
                 model.find(finder).select(selection).sort(sort).skip(skip).limit(limit)
+
+exports.authMiddleware = async (req, res, next) => {
+    let api = req.url.split('/').pop()
+    isGeneral = generalAPIS.includes(api)
+    if (isGeneral) {
+        next()
+    } else if (req.body && req.body.token) {
+        let status = await axios.post('http://loadbalancer:8080/authenticate', {}, { headers: { 'Authorization': "bearer " + req.body.token } })
+            .then(({ status, ...rest }) => {
+                req.user = rest.data.user
+                return status
+            }).catch(({ response: { statusCode } }) => statusCode)
+        if (status === 200)
+            next()
+        else
+            res.status(401).end("invalid Token")
+    } else
+        res.status(400).end('No token')
+}
